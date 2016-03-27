@@ -1,0 +1,95 @@
+---
+title: "Analysis of the ToothGrowth data in R"
+author: "Pedro Magalhães Bernardo"
+date: "Saturday, March 26, 2016"
+output: html_document
+---
+
+
+##Overview
+
+This report is part of a course project within the [Statistical Inference](https://www.coursera.org/learn/statistical-inference) course on the [Data Science Specialization by Johns Hopkins University](https://www.coursera.org/specializations/jhu-data-science) on [Coursera](https://www.coursera.org/).
+
+On this report we will analyze the ToothGrowth data in the R datasets package
+
+##Exploratory Analysis
+
+The ToothGrowth dataset shows the length of odontoblasts in 60 guinea pigs. Each animal received one of three dose levels of vitamin C by one of two delivery methods.
+
+First let's load the dataset and take a look at some information it contains.
+
+```{r,echo=TRUE}
+
+data(ToothGrowth)
+
+str(ToothGrowth)
+
+head(ToothGrowth)
+
+summary(ToothGrowth)
+
+```
+
+
+Let's take a look at how the length of odontoblasts varies with dosage for each delivery method.
+
+```{r,echo=TRUE, fig.width=4, fig.height=4, warning=FALSE}
+
+library(ggplot2)
+raw_data <- ggplot(ToothGrowth, aes(x=dose,y=len,colour=supp)) + 
+      geom_line() + 
+      stat_summary(aes(group = 1), geom = "line", fun.y = mean, size = 1, col = "black") + 
+      facet_grid(. ~ supp)
+raw_data
+
+```
+
+We can see that as the dosage increases, the mean of length of odontoblasts (black line) also increases, for both methods. Also, we can see, that for lower dosages the mean of the length of odontoblasts for the OJ method is bigger.
+
+Now let's take a look at the length of odontoblasts by delivery method.
+
+```{r,echo=TRUE, fig.width=4, fig.height=4, warning=FALSE}
+
+violin <- ggplot(ToothGrowth, aes(x=supp,y=len,fill=supp)) + 
+      geom_violin(col="black",size=2)
+violin
+
+```
+
+From this violin chart we see that the VC delivery method has a bigger variance compared to the OJ method. Also the mean of length of odontoblasts of the pigs that received the vitamin through the OJ method is bigger.
+
+
+##Comparing tooth growth.
+
+Now we will compare the two delivery methods to see if one is significantly better than the other when we look at the length of the odontoblasts.
+
+For that we will make three different comparisons, one for each dosage (0.5, 1.0, 2.0)
+
+First let's subset our datatset.
+
+```{r,echo=TRUE}
+
+oj1 <- subset(ToothGrowth, supp=='OJ' & dose==1.0)$len
+oj2 <- subset(ToothGrowth, supp=='OJ' & dose==2.0)$len
+oj5 <- subset(ToothGrowth, supp=='OJ' & dose==0.5)$len
+vc1 <- subset(ToothGrowth, supp=='VC' & dose==1.0)$len
+vc2 <- subset(ToothGrowth, supp=='VC' & dose==2.0)$len
+vc5 <- subset(ToothGrowth, supp=='VC' & dose==0.5)$len
+
+```
+
+Now let's run a **t test** for each pair and discuss the results.
+
+```{r,echo=TRUE}
+
+t.test(oj5,vc5)
+t.test(oj1,vc1)
+t.test(oj2,vc2)
+
+```
+
+We do not consider the data as paired, since the individuals (pigs), are not the same for each delivery method.
+
+We can see that for the dosages of 0.5 and 1, the OJ delivery methods produces a higher mean for the length of odontoblasts. For both cases our confidence interval of 95% is quite far from 0, and our p-value is quite small (smaller than 0.05), that means that we reject the null hypothesis. This shows us that the OJ method is better than the VC method for this dosages.
+
+On the other hand, for the dosage of 2.0, our confidence interval contains 0, and our p-value is quite large (almost 1). Therefore we fail to reject the null hypothesis, and we can not say if one method is better than other, in fact, they behave very similar for this dosage.
