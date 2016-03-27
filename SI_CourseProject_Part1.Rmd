@@ -82,7 +82,7 @@ var(means)*40
 
 We get a value close to 25. 
 
-In fact the variance of the population is (1/lambda)^2, which in our case is 25.
+In fact the variance of the population is (1/lambda^2), which in our case is 25.
 
 ##Distribution
 
